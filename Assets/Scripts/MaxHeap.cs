@@ -23,10 +23,29 @@ public struct MaxHeap {
 
         TryAddToHeap(root);
     }
-
+    /// <summary>
+    /// Tries to add the node to the heap, it usually does, and also for all of it's children.
+    /// </summary>
+    /// <param name="node"></param>
     public void AddToHeap(ITraversable node)
     {
         TryAddToHeap(node);
+    }
+
+    //this isn't really recursive. IDK why just don't worry about it
+    private void TryAddToHeap(ITraversable node)
+    {
+
+        if (node.IsLeaf) { AddNodeToHeap(node); }
+        else
+        {
+
+            foreach (ITraversable traversable in node.ToNodes())
+            {
+                TryAddToHeap(traversable);
+
+            }
+        }
     }
     /// <summary>
     /// Pop the top node and float nodes up to fill
@@ -46,7 +65,7 @@ public struct MaxHeap {
         //stop doing the float when there's nothing left to float
         while (!leftIsNull && !rightIsNull)
         {
-            if (heap[leftIndex] == null)//if only one on right,
+            if (leftIsNull)//if only one on right,
             {
                 //float right
                 heap[rightIndex / 2] = heap[rightIndex];
@@ -55,7 +74,7 @@ public struct MaxHeap {
                 rightIsNull = true;
 
             }
-            else if (heap[rightIndex] == null)//for left
+            else if (rightIsNull)//for left
             {
                 //float left
                 heap[leftIndex / 2] = heap[leftIndex];
@@ -93,21 +112,7 @@ public struct MaxHeap {
         }
         return returnNode;
     }
-    //this isn't really recursive. IDK why just don't worry about it
-    private void TryAddToHeap(ITraversable node)
-    {
-       
-        if (node.IsLeaf) { AddNodeToHeap(node); }
-        else
-        {
-
-            foreach (ITraversable traversable in node.ToNodes())
-            {
-                TryAddToHeap(traversable);
-
-            }
-        }
-    }
+   
  
     private void AddNodeToHeap(ITraversable node) {
 

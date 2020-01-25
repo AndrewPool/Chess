@@ -9,6 +9,7 @@ using UnityEngine;
 /// </summary>
 public struct ChessBoard {
 
+    public readonly Move moveToMakeThis;
     public bool whiteInCheck;
     public bool blackInCheck;
     public bool whiteWon;
@@ -33,7 +34,7 @@ public struct ChessBoard {
         blackWon = false;
         score = 0;
         this.board = board;
-        
+        moveToMakeThis =new Move(new Location(4,4), new Location(4,4));//this only works for new games!!!
         MakeNodesSmart();
     }
 
@@ -44,6 +45,7 @@ public struct ChessBoard {
     /// <param name="move"> this is the instructions for the board to make a move</param>
     public ChessBoard(SmartSquare[,] array, Move move)
     {
+        moveToMakeThis = move;//this is for poisson
         //we figure this out later
         whiteWon = false;
         blackWon = false;
@@ -153,6 +155,8 @@ public struct ChessBoard {
                         case Token.None: break;
                         case Token.Pawn:
                             //this is for catching the queen ranking!!
+
+                            //TODO add poisn movement in the move 
                             if (row == 0 || row == 7)
                             {
                                 board[row, col] = board[row, col].ConvertToQueen();
@@ -467,14 +471,15 @@ public struct ChessBoard {
        
         if (badNumCount > 0)
         {
-            
+            //so white wants a normal sort up because they go 1to9
+            //black wants a reverse sort because they go -1to-9
             if (currentPlayer)//is white
             {
                 goodNumbers.Sort();
                 badNumbers.Sort();
                 badNumbers.Reverse();
             }
-            else
+            else//currentplayer is black
             {
                 badNumbers.Sort();
                 goodNumbers.Sort();

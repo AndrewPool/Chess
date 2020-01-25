@@ -74,10 +74,24 @@ public struct Decider  {
     /// <returns>the first move, because it's unimplemented</returns>
     public Move PickOneForMe()
     {
-        if(root.to.Keys == null)
+
+        HashSet<DeciderNode> nodesInTree = new HashSet<DeciderNode>();
+        
+        MaxHeap heap = new MaxHeap(root);
+        if (root.to.Keys == null)
         {
             return null;
         }
+
+
+
+
+
+
+
+
+
+
         Move bestMove = new Move(new Location(-1,-1), new Location(-1,-1));
         bool first = true;
         foreach (Move move in root.to.Keys)
@@ -89,16 +103,33 @@ public struct Decider  {
             }
             else
             {
-                if (((DeciderNode)root.to[move]).board.score > ((DeciderNode)root.to[bestMove]).board.score)
-                {
-                    bestMove = move;
-                }
+                
+                    bestMove =BetterMove(bestMove,move);
+               
             }
            
         }
         return bestMove;//there are 
     }
-
+    private Move BetterMove(Move m1, Move m2)
+    {
+        var returnMove = m1;
+        if (player)
+        {
+            if (((DeciderNode)root.to[m1]).board.score > ((DeciderNode)root.to[m2]).board.score)
+            {
+                returnMove = m2;
+            }
+        }
+        else
+        {
+            if (((DeciderNode)root.to[m1]).board.score < ((DeciderNode)root.to[m2]).board.score)
+            {
+                returnMove = m2;
+            }
+        }
+        return returnMove;
+    }
 
     //-----------------------------inits are below, these could be overloaded...------------------------------------
     /// <summary>
@@ -113,7 +144,7 @@ public struct Decider  {
 
         //DateTime endTime = System.DateTime.Now;
         //long difference = endTime.Ticks - startTime.Ticks;
-
+        
 
 
 
@@ -154,7 +185,7 @@ public struct Decider  {
     }
     //------------------------------init above------------------------------
 
-
+    struct Empty { }
 
 }
 

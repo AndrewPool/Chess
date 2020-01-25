@@ -7,7 +7,7 @@ using UnityEngine;
 /// these permissions can be a bit more perrmissable, because it's implemetation has been shielded from the
 /// public interface.
 /// </summary>
-public class DeciderNode: ITraversable
+public class DeciderNode: ITraversable, IEquatable<DeciderNode>
 {
 
     // public int score{ get { return board.score; } }
@@ -129,8 +129,8 @@ public class DeciderNode: ITraversable
                 //  board.board[row, col].moves = null;
             }
         }
-        if (WhiteKingHasMoved == false) WhiteCastleMoveCheck();
-        if (BlackKingHasMoved == false) BlackCastleMoveCheck();
+        if (WhiteKingHasMoved == false && player) WhiteCastleMoveCheck();
+        if (BlackKingHasMoved == false && !player) BlackCastleMoveCheck();
 
         //  Debug.Log(count + " moves smarter");
         IsLeaf = false;
@@ -172,7 +172,7 @@ public class DeciderNode: ITraversable
 
         castle = true;
         //to the right long
-        for (int i = 5; i > 0; i--)
+        for (int i = 3; i > 0; i--)
         {
             if (board.board[7, i].isEmpty == true)
             {
@@ -237,7 +237,7 @@ public class DeciderNode: ITraversable
 
         castle = true;
         //to the left long
-        for (int i = 5; i > 0; i--)
+        for (int i = 3; i > 0; i--)
         {
             if (board.board[0, i].isEmpty == true)
             {
@@ -258,7 +258,7 @@ public class DeciderNode: ITraversable
             }
         }
 
-        if (castle && board.board[7, 0].unit.token == Token.Rook && board.board[7, 0].unit.player == true)
+        if (castle && board.board[0, 0].unit.token == Token.Rook && board.board[0, 0].unit.player == true)
         {
 
             Move newMove = new Move(new Location(0, 4), new Location(0, 2), MoveType.CastleLong);
@@ -276,5 +276,25 @@ public class DeciderNode: ITraversable
     public ICollection<ITraversable> ToNodes()
     {
         return to.Values;
+    }
+   
+
+    public bool Equals(DeciderNode other)
+    {
+        if (other == null) return false;
+        if (this == other) return true;
+       
+        for(int row = 0; row < 8; row++)
+        {
+            for (int col = 0; col < 8; col++)
+            {
+                if(other.board.board[row,col].unit.player != board.board[row, col].unit.player || other.board.board[row, col].unit.token != board.board[row, col].unit.token)
+                {
+                    return false;
+                    
+                }
+            }
+        }
+        return true;
     }
 }

@@ -5,6 +5,8 @@ using UnityEngine.UI;
 
 public class PlaySpace : MonoBehaviour {
 
+
+#pragma warning disable IDE0044 // Add readonly modifier doubtful
     [SerializeField] Sprite WhitePawn;
     [SerializeField] Sprite BlackPawn;
 
@@ -22,7 +24,7 @@ public class PlaySpace : MonoBehaviour {
 
     [SerializeField] Sprite WhiteKing;
     [SerializeField] Sprite BlackKing;
-
+#pragma warning restore IDE0044 // Add readonly modifier doubtful
     Image image;
 
 
