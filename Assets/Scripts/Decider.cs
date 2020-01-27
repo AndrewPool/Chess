@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using robinhood;
 /// <summary>
 /// This is how you do the chess game, if you will. this is the wrapper structure for the game tree,
 /// it houses a root property as well as the public interface for the entire tree.
@@ -13,8 +14,7 @@ public struct Decider  {
     //this was tripping me up, not hidding the impementation...
     private readonly DeciderNode root;
 
-    //player whose turn it is.
-    public readonly bool player;
+    
     /// <summary>
     /// you must give one of these to the PickFunction if you wish to use this datatype correctly, please don't mutate this dict...
     /// </summary>
@@ -31,9 +31,9 @@ public struct Decider  {
     /// <returns>true if game is over</returns>
     public bool Over()
     {
-        Debug.Log("white won:" + root.board.whiteWon);
-        Debug.Log("Black won:" + root.board.blackWon);
-        if (root.board.whiteWon || root.board.blackWon)
+        Debug.Log("white won:" + root.board.WhiteWon);
+        Debug.Log("Black won:" + root.board.BlackWon);
+        if (root.board.WhiteWon || root.board.BlackWon)
         {
             return true;
         }
@@ -45,7 +45,7 @@ public struct Decider  {
     /// <returns>true for white, false for black.</returns>
     public bool Winner()
     {
-        if (root.board.whiteWon)
+        if (root.board.WhiteWon)
         {
             return true;
         }
@@ -54,7 +54,7 @@ public struct Decider  {
 
     public int ScoreForCurrentState()
     {
-        return root.board.score;
+        return root.board.Score;
     }
 
     public SmartSquare[,] GetCurrentState()
@@ -68,62 +68,104 @@ public struct Decider  {
     {
         return root.board.board[row, col];
     }
+
+
+    //DateTime startTime = System.DateTime.Now;
+    //DateTime endTime = System.DateTime.Now;
+    //long difference = endTime.Ticks - startTime.Ticks;
+    //Debug.Log("Pick took");
+    //Debug.Log(difference / TimeSpan.TicksPerMillisecond);
+    //Debug.Log("Milli-Seconds");
+    //Debug.Log(difference);
+    //Debug.Log("Ticks");
+
+
     /// <summary>
     /// This has the chance of returning a null value in the case there are no moves, be preparded to catch i guess.
     /// </summary>
     /// <returns>the first move, because it's unimplemented</returns>
     public Move PickOneForMe()
     {
-
-        HashSet<DeciderNode> nodesInTree = new HashSet<DeciderNode>();
-        
+        Debug.Log("picking one");
+        IDictionary<DeciderNode, Empty> nodesInTree = new Dictionary<DeciderNode, Empty>(200);
         MaxHeap heap = new MaxHeap(root);
+        Debug.Log("adding nodes to checklist");
+        root.AddNodesToTreeRecursivly(nodesInTree);
+
         if (root.to.Keys == null)
         {
             return null;
         }
-
-
-
-
-
-
-
-
-
-
-        Move bestMove = new Move(new Location(-1,-1), new Location(-1,-1));
-        bool first = true;
-        foreach (Move move in root.to.Keys)
+        Debug.Log("popping and adding to tree");
+        while (nodesInTree.Count < 100)
         {
-            if (first)
+            DeciderNode top = (DeciderNode)heap.Pop();
+            top.SetMovesTo();
+            if (top.to != null)
             {
-                bestMove = move;
-                first = false;
+                foreach (DeciderNode node in top.to.Values)
+                {
+                    if (!nodesInTree.ContainsKey(node))
+                    {
+
+                        heap.AddToHeap(node);
+                        nodesInTree.Add(node, new Empty());
+
+                    }
+                }
             }
-            else
-            {
-                
-                    bestMove =BetterMove(bestMove,move);
-               
-            }
-           
+
         }
-        return bestMove;//there are 
+
+       // picking the best for the player;
+
+        DeciderNode topOfHeap = (DeciderNode)heap.Pop();
+        while (topOfHeap.Player != root.Player && heap.HasTop())
+        {
+
+            topOfHeap = (DeciderNode)heap.Pop();
+
+        }
+
+        return MoveForNode(topOfHeap);
+
+
+
+
+
+    }
+
+    private Move MoveForNode(DeciderNode node)
+    {
+
+        DeciderNode check = node;
+        
+        while (true)
+        {
+            if ((DeciderNode)check.From() == root)
+            {
+                return check.board.moveToMakeThis;
+            }
+            check = (DeciderNode)check.From();
+        }
+       
     }
     private Move BetterMove(Move m1, Move m2)
     {
         var returnMove = m1;
-        if (player)
+        if (root.Player)
         {
-            if (((DeciderNode)root.to[m1]).board.score > ((DeciderNode)root.to[m2]).board.score)
+
+            if (((DeciderNode)root.to[m1]).board.Score > ((DeciderNode)root.to[m2]).board.Score)
             {
                 returnMove = m2;
             }
         }
         else
         {
-            if (((DeciderNode)root.to[m1]).board.score < ((DeciderNode)root.to[m2]).board.score)
+            Debug.Log(((DeciderNode)root.to[m1]).board.Score);
+            //((DeciderNode)root.to[m1]).board.Score
+            if (((DeciderNode)root.to[m1]).board.Score < ((DeciderNode)root.to[m2]).board.Score)
             {
                 returnMove = m2;
             }
@@ -140,34 +182,21 @@ public struct Decider  {
     public Decider Pick(Move move)
     {
 
-        //DateTime startTime = System.DateTime.Now;
-
-        //DateTime endTime = System.DateTime.Now;
-        //long difference = endTime.Ticks - startTime.Ticks;
-        
-
-
-
-        //Debug.Log("Pick took");
-        //Debug.Log(difference / TimeSpan.TicksPerMillisecond);
-        //Debug.Log("Milli-Seconds");
-        //Debug.Log(difference);
-        //Debug.Log("Ticks");
         DeciderNode node = (DeciderNode)root.to[move];
-        root.to = null;
-        return new Decider(node, !player);
+        root.ConvertToTuber();
+        return new Decider(node);
     }
 
    
 
     //this is for internal Deciderness.
-    public Decider(DeciderNode node, bool player)
+    public Decider(DeciderNode node)
     {
-        this.player = player;
+        
         root = node;
         if (root.IsLeaf)
         {
-            root.SetMovesTo(player);
+            root.SetMovesTo();
         }
     }
 
@@ -178,15 +207,14 @@ public struct Decider  {
     /// <param name="setupState"></param>
     public Decider(SmartSquare[,] setupState)
     {
-        this.player = true;
+      
         root = new DeciderNode(setupState);
-        root.SetMovesTo(true);//first player
+        root.SetMovesTo();//first player
         //we know this is a leaf
     }
     //------------------------------init above------------------------------
 
-    struct Empty { }
-
+ 
 }
 
 

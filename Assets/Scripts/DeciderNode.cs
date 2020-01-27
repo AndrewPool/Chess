@@ -1,13 +1,13 @@
 ﻿using System;
-using System.Collections;
+
 using System.Collections.Generic;
 using UnityEngine;
 
+
 /// <summary>
-/// these permissions can be a bit more perrmissable, because it's implemetation has been shielded from the
-/// public interface.
+/// This is a node for the chess tree
 /// </summary>
-public class DeciderNode: ITraversable, IEquatable<DeciderNode>
+public class DeciderNode : ITraversable, IEquatable<DeciderNode>
 {
 
     // public int score{ get { return board.score; } }
@@ -16,7 +16,8 @@ public class DeciderNode: ITraversable, IEquatable<DeciderNode>
     {
         get
         {
-           return board.score;
+         //   return board.Score;
+            return Math.Abs(board.Score);
         }
     }
 
@@ -29,13 +30,16 @@ public class DeciderNode: ITraversable, IEquatable<DeciderNode>
     /// <summary>
     /// this can now be null able on mate, this is your mate check.
     /// </summary>
-    public IDictionary<Move, ITraversable> to;
+    public IDictionary<Move, ITraversable> to { get; private set; }
 
     public bool WhiteKingHasMoved { get; private set; }
 
     public bool BlackKingHasMoved { get; private set; }
 
     public readonly bool poison;//very* inside joke
+
+    public bool Player { get; private set; }
+
 
     /// <summary>
     /// for setting up a new game
@@ -44,6 +48,7 @@ public class DeciderNode: ITraversable, IEquatable<DeciderNode>
     /// <param name="from"></param>
     public DeciderNode(SmartSquare[,] board, DeciderNode from = null)
     {
+        Player = true;
         WhiteKingHasMoved = false;
         BlackKingHasMoved = false;
         poison = false;
@@ -53,9 +58,10 @@ public class DeciderNode: ITraversable, IEquatable<DeciderNode>
         IsLeaf = true;
 
     }
-
+    //this is internally built
     public DeciderNode(ChessBoard board, DeciderNode from)
     {
+        Player = !from.Player;
         WhiteKingHasMoved = from.WhiteKingHasMoved;
         BlackKingHasMoved = from.BlackKingHasMoved;
         this.board = board;
@@ -64,21 +70,34 @@ public class DeciderNode: ITraversable, IEquatable<DeciderNode>
         IsLeaf = true;
 
     }
+
+
+    public void ConvertToTuber()
+    {
+        to = null;
+    }
     /// <summary>
     /// Be aware that this also clears the moves list on all the squares on completion, to save space...
     /// this can be updated later create a different square type without the pointers. idk, that's a lot of work, not a lot of pay off.
     /// </summary>
-    /// <param name="player"></param>
-    public void SetMovesTo(bool player)
+    /// 
+    public void SetMovesTo()
     {
         //  Debug.Log("making moves smart");
         int count = 0;
         to = new Dictionary<Move, ITraversable>();
 
+        if(board.BlackWon || board.WhiteWon)
+        {
 
+            
+
+            return;
+        }
+      //  Debug.Log(Player);
         //check to see if the kings have moved
         if (WhiteKingHasMoved == false && board.board[0, 4].unit.token != Token.King) WhiteKingHasMoved = true;
-       
+
         if (BlackKingHasMoved == false && board.board[7, 4].unit.token != Token.King) BlackKingHasMoved = true;
        
         //cycle through the spaces...
@@ -87,17 +106,15 @@ public class DeciderNode: ITraversable, IEquatable<DeciderNode>
             for (int col = 0; col < 8; col++)
             {
                 //if they are the current player, that was passed
-                if (board.board[row, col].unit.player == player)
+                if (board.board[row, col].unit.player == Player)
                 {
 
                     //cycles all the moves
-
+                   // Debug.Log(board.board[row, col].moves.Length);
                     //this is terrible but i'm not sure if it's worse than resizing arrays...
                     for (int i = 0; i < board.board[row, col].moves.Length; i++)
-
-
-                    {
-
+{
+                        
                         Move newMove = new Move(new Location(row, col), board.board[row, col].moves[i]);
                         DeciderNode newNode = new DeciderNode(new ChessBoard(board.board, newMove), this);
 
@@ -105,7 +122,7 @@ public class DeciderNode: ITraversable, IEquatable<DeciderNode>
 
                         //this keeps you from making a move that would put you in check
                         //this would work better with a functional paradigm assigning a check func at player aloc
-                        if ((!newNode.board.whiteInCheck && player) || (!newNode.board.blackInCheck && !player))
+                        if ((!newNode.board.WhiteInCheck && Player) || (!newNode.board.BlackInCheck && !Player))
                         {
                             //i should not need this test, but also i don't know why i need it
 
@@ -129,11 +146,16 @@ public class DeciderNode: ITraversable, IEquatable<DeciderNode>
                 //  board.board[row, col].moves = null;
             }
         }
-        if (WhiteKingHasMoved == false && player) WhiteCastleMoveCheck();
-        if (BlackKingHasMoved == false && !player) BlackCastleMoveCheck();
+
+        //does the stuff for castleing
+        if (WhiteKingHasMoved == false && Player) WhiteCastleMoveCheck();
+        if (BlackKingHasMoved == false && !Player) BlackCastleMoveCheck();
 
         //  Debug.Log(count + " moves smarter");
         IsLeaf = false;
+
+       board.DisposeOfResources();
+
     }
 
     private void BlackCastleMoveCheck()
@@ -277,24 +299,45 @@ public class DeciderNode: ITraversable, IEquatable<DeciderNode>
     {
         return to.Values;
     }
-   
+
 
     public bool Equals(DeciderNode other)
     {
         if (other == null) return false;
         if (this == other) return true;
-       
-        for(int row = 0; row < 8; row++)
+
+        for (int row = 0; row < 8; row++)
         {
             for (int col = 0; col < 8; col++)
             {
-                if(other.board.board[row,col].unit.player != board.board[row, col].unit.player || other.board.board[row, col].unit.token != board.board[row, col].unit.token)
+                if (other.board.board[row, col].unit.player != board.board[row, col].unit.player || other.board.board[row, col].unit.token != board.board[row, col].unit.token)
                 {
                     return false;
-                    
+
                 }
             }
         }
         return true;
+    }
+
+    public override int GetHashCode()
+    {
+        return board.Hash;
+    }
+
+
+    public void AddNodesToTreeRecursivly(IDictionary<DeciderNode, Empty> onlyKeys)
+    {
+        onlyKeys.Add(this, new Empty());
+        if (!IsLeaf)
+        {
+            foreach (DeciderNode node in to.Values)
+            {
+                node.AddNodesToTreeRecursivly(onlyKeys);
+            }
+
+
+        }
+       
     }
 }

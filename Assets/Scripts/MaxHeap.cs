@@ -1,12 +1,11 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿
 /// <summary>
-/// This struct is the implmentation 
+/// This struct is the implmentation
+/// TODO generic it
 /// </summary>
 public struct MaxHeap {
 
-    public const int size = 1000;
+    public const int size = 400;
 
     /// <summary>
     /// beaware that the first index[0] is not used
@@ -47,6 +46,10 @@ public struct MaxHeap {
             }
         }
     }
+    public bool HasTop()
+    {
+        return heap[1] != null;
+    }
     /// <summary>
     /// Pop the top node and float nodes up to fill
     /// </summary>
@@ -63,7 +66,7 @@ public struct MaxHeap {
         bool leftIsNull = heap[leftIndex] == null;
         bool rightIsNull = heap[rightIndex] == null;
         //stop doing the float when there's nothing left to float
-        while (!leftIsNull && !rightIsNull)
+        while (!leftIsNull && !rightIsNull && HasTop())
         {
             if (leftIsNull)//if only one on right,
             {

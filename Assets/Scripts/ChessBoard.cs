@@ -4,38 +4,43 @@ using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
-/// It's kinda terrible that this isn't safe or shit, what can you do...
-/// This is a container for the board array this could easy also be a static helper class that configures squares[,]
+/// 
+/// This is a container for the board array it contains all the squares with information on who can move where and bool values for
+/// Vicotry or check.
 /// </summary>
 public struct ChessBoard {
 
+    //cashed refrence
     public readonly Move moveToMakeThis;
-    public bool whiteInCheck;
-    public bool blackInCheck;
-    public bool whiteWon;
-    public bool blackWon;
-    public int score;
-    
+    //some things we learnged while smaking the sqares smart
+    public bool WhiteInCheck { get; private set; }
+    public bool BlackInCheck { get; private set; }
+    public bool WhiteWon { get; private set; }
+    public bool BlackWon { get; private set; }
+    public int Score { get; private set; }
+    public int Hash { get; private set; }
+    //the things we wanted to learn
     public readonly SmartSquare[,] board;
 
    
 
     /// <summary>
-    ///
-    /// this is if for somereason you already have a bunch of smart squares, like vecause i created one for setting up the game.
+    /// this is if for somereason you already have a bunch of smart squares, like vecause i creaeted one for setting up the game.
     /// </summary>
     /// <param name="board"></param>
     public ChessBoard(SmartSquare[,] board)
     {
         //we figure this out later
-        whiteInCheck = false;
-        blackInCheck = false;
-        whiteWon = false;
-        blackWon = false;
-        score = 0;
+        WhiteInCheck = false;
+        BlackInCheck = false;
+        WhiteWon = false;
+        BlackWon = false;
+        Hash = 1;
+        Score = 0;
         this.board = board;
-        moveToMakeThis =new Move(new Location(4,4), new Location(4,4));//this only works for new games!!!
+        moveToMakeThis =new Move(new Location(4,4), new Location(4,4));//this only works for new games!!! this is a paceholder
         MakeNodesSmart();
+
     }
 
     /// <summary>
@@ -47,31 +52,33 @@ public struct ChessBoard {
     {
         moveToMakeThis = move;//this is for poisson
         //we figure this out later
-        whiteWon = false;
-        blackWon = false;
-        whiteInCheck = false;
-        blackInCheck = false;
-        score = 0;
+        WhiteWon = false;
+        BlackWon = false;
+        WhiteInCheck = false;
+        BlackInCheck = false;
+        Hash = 1;
+        Score = 0;
         //i'm not sure why all of this is nessessary. blame microsoft.
         SmartSquare[,] newArray = (SmartSquare[,]) array.Clone();
         // SmartSquare[,] newArray = new SmartSquare[8, 8];
 
-        //this could be done in make nodes smart. maybe...
+        //then dispose of all unused resources
         for (int row = 0; row < 8; row++)
         {
             for (int col = 0; col < 8; col++)
             {
 
-               //this is nessessary because these are objects.
-               //also we can't do it on the fly because we also tag the to
-               //we would have to implement so much shit to get it to work.
-                    newArray[row, col].movesTo = new Location[0];
-              
-                    newArray[row, col].moves = new Location[0];
-            
+                //this is nessessary because these are objects.
+                //also we can't do it on the fly because we also tag the to
+                //we would have to implement so much shit to get it to work.
+                newArray[row, col].movesTo = new Location[0];
+
+                newArray[row, col].moves = new Location[0];
+
 
             }
         }
+
         //makes the new location have the token as the old spaces
         newArray[move.to.row, move.to.column] = newArray[move.from.row, move.from.column];
         // then clears the space
@@ -83,6 +90,7 @@ public struct ChessBoard {
 
         MakeNodesSmart();
     }
+
     private static void MoveTypeHandle(Move move, SmartSquare[,] board)
     {
        // Debug.Log()
@@ -100,7 +108,7 @@ public struct ChessBoard {
                     board[0, 3] = board[0, 0];
                     board[0, 0] = new SmartSquare(true, Token.None);
                 }
-                break;
+                return;
             case MoveType.CastleShort:
                 if (move.from.row == 7)
                 {
@@ -113,23 +121,23 @@ public struct ChessBoard {
                     board[0, 5] = board[0, 7];
                     board[0, 7] = new SmartSquare(true, Token.None);
                 }
-                break;
+                return;
         }
 
     }
 
 
-    //////---------------------------everything is in Make nodes smart,
+    //////---------------------------everything is in Make nodes smart everything below is this or helper function,---------------------------
     ///we want to do everything in this pass, and get all relevant info out of it. this is exciting times for all of us
-    ///-------------------------------------
-    //TODO bring setmovesto in DeciderNODE implementation down to here to resolve fancy moves
-
+    ///TODO Poision
+   
     /// <summary>
     /// soo many magic numbers in this method
     /// it is a mounth full, but hey, you do what you can to limit the boxes, also everything is where you'ld look for it so that something
     /// </summary>
     private void MakeNodesSmart()
     {
+       // Debug.Log("making squares smart");
         bool whiteKingFound = false;
         bool blackKingFound = false;
 
@@ -164,6 +172,7 @@ public struct ChessBoard {
                                 break;
 
                             }
+
                             //Debug.Log("pawn found");
                             //check space below
                             if (board[row, col].unit.player)//is white
@@ -171,7 +180,7 @@ public struct ChessBoard {
                                 //check space above
                                 checkLoc = new Location(row + 1, col);
 
-                                if (ValidateSpace(checkLoc))
+                                if (checkLoc.IsValid())
                                 {
                                     if (board[checkLoc.row, checkLoc.column].isEmpty)
                                     {
@@ -189,7 +198,7 @@ public struct ChessBoard {
                                 }
                                 //up and left
                                 checkLoc = new Location(row + 1, col - 1);
-                                if (ValidateSpace(checkLoc))
+                                if (checkLoc.IsValid())
                                 {
                                     if (!board[checkLoc.row, checkLoc.column].isEmpty)
                                     {
@@ -206,7 +215,7 @@ public struct ChessBoard {
 
                                 //up and right
                                 checkLoc = new Location(row + 1, col + 1);
-                                if (ValidateSpace(checkLoc))
+                                if (checkLoc.IsValid())
                                 {
                                     if (!board[checkLoc.row, checkLoc.column].isEmpty)
                                     {
@@ -226,7 +235,7 @@ public struct ChessBoard {
                             {
                                 //check space above
                                 checkLoc = new Location(row - 1, col);
-                                if (ValidateSpace(checkLoc))
+                                if (checkLoc.IsValid())
                                 {
                                     if (board[checkLoc.row, checkLoc.column].isEmpty)
                                     {
@@ -243,7 +252,7 @@ public struct ChessBoard {
                                 }
                                 //down and left
                                 checkLoc = new Location(row - 1, col - 1);
-                                if (ValidateSpace(checkLoc))
+                                if (checkLoc.IsValid())
                                 {
                                     if (!board[checkLoc.row, checkLoc.column].isEmpty)
                                     {
@@ -259,7 +268,7 @@ public struct ChessBoard {
                                 }
                                 //down and right
                                 checkLoc = new Location(row - 1, col + 1);
-                                if (ValidateSpace(checkLoc))
+                                if (checkLoc.IsValid())
                                 {
                                     if (!board[checkLoc.row, checkLoc.column].isEmpty)
                                     {
@@ -283,7 +292,7 @@ public struct ChessBoard {
                             for (int i = 0; i < Location.KnightHops.Length; i++)
                             {
                                 checkLoc = fromLoc.Add(Location.KnightHops[i]);
-                                if (ValidateSpace(checkLoc))
+                                if (checkLoc.IsValid())
                                 {
                                     //if the space is empty, se movement
                                     if (board[checkLoc.row, checkLoc.column].isEmpty)
@@ -344,7 +353,7 @@ public struct ChessBoard {
                             {
                                 Location[] vectors = Location.RoyaltyTravelVectors;
                                 checkLoc = fromLoc.Add(vectors[i]);
-                                if (ValidateSpace(checkLoc))
+                                if (checkLoc.IsValid())
                                 {
                                     if (board[checkLoc.row, checkLoc.column].isEmpty)
                                     {
@@ -374,31 +383,63 @@ public struct ChessBoard {
         {
             if (board[whiteKingLocation.row, whiteKingLocation.column].movesTo.Length > 0)
             {
-                whiteInCheck = true;
+                WhiteInCheck = true;
             }
         }
         else
         {
-            blackWon = true;
-            return;
+            BlackWon = true;
+        
         }
         if (blackKingFound) { 
         if (board[blackKingLocation.row, blackKingLocation.column].movesTo.Length > 0)
         {
-            blackInCheck = true;
+            BlackInCheck = true;
         }
         } else
         {
-            whiteWon = true;
-            return;
+            WhiteWon = true;
+          
         }
-        //this is the scoreing "functino" i guess it went here because it goes here i guess.
-        int score = 0;
 
-        //Debug.Log(gradeAblePlaces.Count.ToString());
-        foreach(Location piece in gradeAblePlaces)
+        //finnally...
+
+        //set the hash and score from the information on what peices are where
+        SetHash(gradeAblePlaces);
+
+        Score = ScoreForPieces(gradeAblePlaces);
+
+
+
+        
+
+    }
+    public void DisposeOfResources()
+    {
+        //then dispose of all unused resources
+        for (int row = 0; row < 8; row++)
         {
-           
+            for (int col = 0; col < 8; col++)
+            {
+
+                //this is nessessary because these are objects.
+                //also we can't do it on the fly because we also tag the to
+                //we would have to implement so much shit to get it to work.
+                board[row, col].movesTo = new Location[0];
+
+                board[row, col].moves = new Location[0];
+
+
+            }
+        }
+
+    }
+    private int ScoreForPieces(IList<Location> gradeAblePlaces)
+    {
+        int score = 0;
+        foreach (Location piece in gradeAblePlaces)
+        {
+
             bool player = board[piece.row, piece.column].unit.player;
             int unitscore = TokenHelper.Value(board[piece.row, piece.column].unit.token, player);
 
@@ -423,25 +464,26 @@ public struct ChessBoard {
             int chainScore = ScoreForPlayer(moves, player, unitscore);
 
 
-            score = score + unitscore + bestMove + chainScore; 
+            score = score + unitscore + bestMove + chainScore;
 
         }
-        this.score = score;
-
+        return score;
     }
 
+    private void SetHash(IList<Location> gradeAblePlaces)
+    {
+        int hash = 1;
+        int piece = 1;
+        foreach(Location place in gradeAblePlaces)
+        {
+            int pieceScore = board[place.row, place.column].unit.HashValue() + place.Mapped2D();
 
 
-
-
-
-
-
-
-
-
-
-
+            hash = hash + (pieceScore * (768*piece));
+            piece++;
+        }
+        Hash = hash;
+    }   
 
     private int ScoreForPlayer(Location[] movesTo, bool player, int firstPieceValue)
     {
@@ -501,7 +543,7 @@ public struct ChessBoard {
                     bool cyclePlayer = !currentPlayer;
                     do
                     {
-                       
+
                         List<int> toBeDeletedFrom = cycleDictList[currentPlayer];
                         List<int> toDelete = cycleDictList[!currentPlayer];
 
@@ -527,7 +569,7 @@ public struct ChessBoard {
                             }
                             else
                             {
-                                
+
                                 return score;
                             }
                         }
@@ -537,19 +579,9 @@ public struct ChessBoard {
                         cyclePlayer = !cyclePlayer;
 
                     } while (goodNumIndex < goodNumCount && badNumIndex < badNumCount);
-
                 }
-                
-                
-              
-
-            
             }
-
-
         }
-
-
         return score;
     }
 
@@ -558,7 +590,7 @@ public struct ChessBoard {
         for (int i = 0; i < vectors.Length; i++)
         {
             Location checkLoc = fromLoc.Add(vectors[i]);
-            while (ValidateSpace(checkLoc))
+            while (checkLoc.IsValid())
             {
                 if (board[checkLoc.row, checkLoc.column].isEmpty)
                 {
@@ -578,13 +610,6 @@ public struct ChessBoard {
             }
         }
         
-    }
-
-    //makes sure teh space is on the board
-    private bool ValidateSpace(Location location)
-    {
-        if (location.column < 8 && location.row < 8 && location.row >= 0 && location.column >= 0) return true;
-        return false;
     }
 
     //doesn't set guard points for defending the king, that wouldn't make much sense, since defending is more like reclaming it's dead body

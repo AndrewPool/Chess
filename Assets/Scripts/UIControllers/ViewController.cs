@@ -23,7 +23,7 @@ public class ViewController : MonoBehaviour {
     private const bool player1 = true;
     private const bool player2 = false;
 
-    private bool computerPlaying = true;
+    private bool computerPlaying = false;
     private bool computerPlayerBool = false;
     public void Select(Location location)
     {
@@ -94,12 +94,14 @@ public class ViewController : MonoBehaviour {
     //activates only the active spaces you can move
     private void ActivateFromSpaces()
     {
-      //  Debug.Log("activingt from spaces");
+       // Debug.Log("activingt from spaces");
         DisableAllSpaces();
+       // Debug.Log(game.Choices().Count);
         foreach (Move move in game.Choices())
         {
+           
             int j = move.from.Mapped2D();
-          //  Debug.Log("activeing from space: " + j + " to: " + move.to.Mapped2D());
+          // Debug.Log("activeing from space: " + j + " to: " + move.to.Mapped2D());
             //Debug.Log(move.)
             GameView[j].ToggleActive(true);
         }
@@ -184,6 +186,7 @@ public class ViewController : MonoBehaviour {
     /// </summary>
     public void SetUpNewGame()
     {
+        Debug.Log("Setting up new Game");
         CurrentPlayer = player1;
         game = new Decider(SmartSquare.StandardBoardSetUp());
         SetComputerPlayerIcon();
@@ -194,6 +197,7 @@ public class ViewController : MonoBehaviour {
 
     private void SyncWithGame()
     {
+        Debug.Log("sync with game");
         SmartSquare[,] board = game.GetCurrentState();
         for (int row = 0; row < 8; row++)
         {
@@ -202,9 +206,7 @@ public class ViewController : MonoBehaviour {
 
                 int i = row * 8 + col;
                 GameView[i].ToggleActive(true);
-                //DeciderNode node = game
-                //Debug.Log(i);
-
+               
                 //set the token
                 GameView[i].PlaySpace().SetToken(board[row, col].unit.token, board[row, col].unit.player);
 
@@ -213,6 +215,7 @@ public class ViewController : MonoBehaviour {
         string scoreText = game.ScoreForCurrentState().ToString();
         AndyScoreDisplay.text = scoreText;
         ActivateFromSpaces();
+        Debug.Log("finnished sync");
     }
 
 
