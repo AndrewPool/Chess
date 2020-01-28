@@ -97,12 +97,11 @@ public struct Decider  {
             return null;
         }
         Debug.Log("popping and adding to tree");
-        while (nodesInTree.Count < 1000 && heap.Count > 1 && heap.HasTop())
+        while (nodesInTree.Count < 10000  && heap.HasTop())
         {
             DeciderNode top = (DeciderNode)heap.Pop();
           
-            if (top.to != null)
-            {
+            
                 top.SetMovesTo();
                 foreach (DeciderNode node in top.to.Values)
                 {
@@ -114,19 +113,19 @@ public struct Decider  {
 
                     }
                 }
-            }
+            
 
         }
-
+        Debug.Log(heap.Count);
        // picking the best for the player;
         
         DeciderNode topOfHeap = (DeciderNode)heap.Pop();
-        //while (topOfHeap.Player != root.Player && heap.HasTop())
-        //{
+        while (topOfHeap.Player != root.Player && heap.HasTop())
+        {
 
-        //    topOfHeap = (DeciderNode)heap.Pop();
+            topOfHeap = (DeciderNode)heap.Pop();
 
-        //}
+        }
 
         return MoveForNode(topOfHeap);
 

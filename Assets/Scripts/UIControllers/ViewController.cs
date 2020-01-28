@@ -86,7 +86,7 @@ public class ViewController : MonoBehaviour {
                 break;
             }
         }
-        Debug.Log(move.from.String());
+       // Debug.Log(move.from.String());
         game = game.Pick(move);
     }
     

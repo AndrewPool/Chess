@@ -329,16 +329,18 @@ public class DeciderNode : ITraversable, IEquatable<DeciderNode>
 
     public void AddNodesToTreeRecursivly(IDictionary<DeciderNode, Empty> onlyKeys)
     {
-        onlyKeys.Add(this, new Empty());
-        if (!IsLeaf)
+        if (!onlyKeys.ContainsKey(this))
         {
-            foreach (DeciderNode node in to.Values)
+            onlyKeys.Add(this, new Empty());
+            if (!IsLeaf)
             {
-                node.AddNodesToTreeRecursivly(onlyKeys);
+                foreach (DeciderNode node in to.Values)
+                {
+                    node.AddNodesToTreeRecursivly(onlyKeys);
+                }
+
+
             }
-
-
         }
-       
     }
 }

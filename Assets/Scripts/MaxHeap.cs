@@ -5,7 +5,7 @@
 /// </summary>
 public struct MaxHeap {
 
-    public const int size = 10000;
+    public const int size = 50000;
 
     /// <summary>
     /// beaware that the first index[0] is not used
