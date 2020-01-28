@@ -322,6 +322,7 @@ public class DeciderNode : ITraversable, IEquatable<DeciderNode>
 
     public override int GetHashCode()
     {
+        if (!Player) return -board.Hash;
         return board.Hash;
     }
 

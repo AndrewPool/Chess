@@ -87,7 +87,7 @@ public struct Decider  {
     public Move PickOneForMe()
     {
         Debug.Log("picking one");
-        IDictionary<DeciderNode, Empty> nodesInTree = new Dictionary<DeciderNode, Empty>(200);
+        IDictionary<DeciderNode, Empty> nodesInTree = new Dictionary<DeciderNode, Empty>(10000);
         MaxHeap heap = new MaxHeap(root);
         Debug.Log("adding nodes to checklist");
         root.AddNodesToTreeRecursivly(nodesInTree);
@@ -97,12 +97,13 @@ public struct Decider  {
             return null;
         }
         Debug.Log("popping and adding to tree");
-        while (nodesInTree.Count < 100)
+        while (nodesInTree.Count < 1000 && heap.Count > 1 && heap.HasTop())
         {
             DeciderNode top = (DeciderNode)heap.Pop();
-            top.SetMovesTo();
+          
             if (top.to != null)
             {
+                top.SetMovesTo();
                 foreach (DeciderNode node in top.to.Values)
                 {
                     if (!nodesInTree.ContainsKey(node))
@@ -118,14 +119,14 @@ public struct Decider  {
         }
 
        // picking the best for the player;
-
+        
         DeciderNode topOfHeap = (DeciderNode)heap.Pop();
-        while (topOfHeap.Player != root.Player && heap.HasTop())
-        {
+        //while (topOfHeap.Player != root.Player && heap.HasTop())
+        //{
 
-            topOfHeap = (DeciderNode)heap.Pop();
+        //    topOfHeap = (DeciderNode)heap.Pop();
 
-        }
+        //}
 
         return MoveForNode(topOfHeap);
 
