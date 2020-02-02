@@ -41,52 +41,45 @@ public enum MoveType
     Standard,
     CastleShort,
     CastleLong,
-    Poisson0,
-    Poisson1,
-    Poisson2,
-    Poisson3,
-    Poisson4,
-    Poisson5,
-    Poisson6,
-    Poisson7,
+    Poisson
 
 
 }
 /// <summary>
 /// This is me imagineing that this is swift and creating a healper class that functions to convert enum types to differernt values, and back
 /// </summary>
-public static class MoveTypeHelper
-{
-    public static MoveType PoissonForIndex(int i)
-    {
-        if (i == 0) return MoveType.Poisson0;
-        if (i == 1) return MoveType.Poisson1;
-        if (i == 2) return MoveType.Poisson2;
-        if (i == 3) return MoveType.Poisson3;
-        if (i == 4) return MoveType.Poisson4;
-        if (i == 5) return MoveType.Poisson5;
-        if (i == 6) return MoveType.Poisson6;
-        if (i == 7) return MoveType.Poisson7;
+//public static class MoveTypeHelper
+//{
+//    public static MoveType PoissonForIndex(int i)
+//    {
+//        if (i == 0) return MoveType.Poisson0;
+//        if (i == 1) return MoveType.Poisson1;
+//        if (i == 2) return MoveType.Poisson2;
+//        if (i == 3) return MoveType.Poisson3;
+//        if (i == 4) return MoveType.Poisson4;
+//        if (i == 5) return MoveType.Poisson5;
+//        if (i == 6) return MoveType.Poisson6;
+//        if (i == 7) return MoveType.Poisson7;
 
-        return MoveType.Standard;
+//        return MoveType.Standard;
 
-    }
+//    }
 
-    public static int ColumnForPoisson(MoveType moveType)
-    {
-        switch (moveType)
-        {
-            case MoveType.Poisson0:return 0;
-            case MoveType.Poisson1:return 1;
-            case MoveType.Poisson2:return 2;
-            case MoveType.Poisson3:return 3;
-            case MoveType.Poisson4:return 4;
-            case MoveType.Poisson5:return 5;
-            case MoveType.Poisson6:return 6;
-            case MoveType.Poisson7:return 7;
-                //i think it works like this...
+//    public static int ColumnForPoisson(MoveType moveType)
+//    {
+//        switch (moveType)
+//        { 
+//            case MoveType.Poisson0:return 0;
+//            case MoveType.Poisson1:return 1;
+//            case MoveType.Poisson2:return 2;
+//            case MoveType.Poisson3:return 3;
+//            case MoveType.Poisson4:return 4;
+//            case MoveType.Poisson5:return 5;
+//            case MoveType.Poisson6:return 6;
+//            case MoveType.Poisson7:return 7;
+//                //i think it works like this...
            
-        }
-        return -1;
-    }
-}
+//        }
+//        return -1;
+//    }
+//}

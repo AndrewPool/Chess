@@ -81,13 +81,147 @@ public struct Decider  {
 
 
     /// <summary>
-    /// This has the chance of returning a null value in the case there are no moves, be preparded to catch i guess.
+    /// This has the chance of returning a null value/crash in the case there are no moves, be preparded to catch i guess.
     /// </summary>
     /// <returns>the first move, because it's unimplemented</returns>
     public Move PickOneForMe()
     {
+
+        Debug.Log("text works");
+        return TwoDeep();
+
+    }
+    //TODO make N deep
+    public Move TwoDeep()
+    {
+        Debug.Log("two deep picker");
+        IDictionary<DeciderNode, Empty> checkList = new Dictionary<DeciderNode,Empty>(10000);
+        ICollection<ITraversable> nodes = root.ToNodes();
+        foreach (DeciderNode node in nodes)
+        {
+
+            checkList.Add(node, new Empty());
+        }
+
+        foreach (DeciderNode node in nodes)
+        {
+
+            node.AddAndCreateAllUniqueChildrenAgainstChecklist(checkList, 10);
+        }
+        DeciderNode bestNode = new DeciderNode(SmartSquare.StandardBoardSetUp());
+
+        int best = int.MaxValue;
+        if (root.Player)
+        {
+            foreach (ITraversable child in nodes)
+            {
+
+                DeciderNode testChild = (DeciderNode)child;
+                int score = testChild.ScoreForBranch();
+
+
+                if (score < best)
+                {
+                    best = score;
+                    bestNode = testChild;
+                }
+
+
+
+
+            }
+        }
+        else
+        {
+           
+            best = int.MinValue;
+          
+            foreach (ITraversable child in nodes)
+            {
+                DeciderNode testChild = (DeciderNode)child;
+                int score = testChild.ScoreForBranch();
+
+
+                if (score > best)
+                {
+                    best = score;
+                    bestNode = testChild;
+                }
+
+            }
+
+
+        }
+
+        return bestNode.board.moveToMakeThis;//TODO this will return null
+
+
+
+
+
+
+
+    }
+    public Move OneDeep()
+    {
+        Debug.Log("one deep picker");
+        ICollection<ITraversable> nodes = root.ToNodes();
+        foreach (DeciderNode node in nodes)
+        {
+           
+            node.SetMovesTo();
+        }
+        nodes = root.ToNodes();
+        DeciderNode bestNode = new DeciderNode(SmartSquare.StandardBoardSetUp());
+
+        int best = int.MinValue;
+        if (!root.Player)
+        {
+            foreach (ITraversable child in nodes)
+            {
+
+                DeciderNode testChild = (DeciderNode)child;
+                int score = testChild.BestMoveScore();
+
+
+                if (score > best)
+                {
+                    best = score;
+                    bestNode = testChild;
+                }
+
+
+
+
+            }
+        }
+        else
+        {
+            best = int.MaxValue;
+            foreach (ITraversable child in nodes)
+            {
+
+                DeciderNode testChild = (DeciderNode)child;
+                int score = testChild.BestMoveScore();
+
+
+                if (score < best)
+                {
+                    best = score;
+                    bestNode = testChild;
+                }
+            }
+
+        }
+      
+        return bestNode.board.moveToMakeThis;
+    }
+    private Move StupidHeapBuild()
+    {
         Debug.Log("picking one");
         IDictionary<DeciderNode, Empty> nodesInTree = new Dictionary<DeciderNode, Empty>(10000);
+
+        
         MaxHeap heap = new MaxHeap(root);
         Debug.Log("adding nodes to checklist");
         root.AddNodesToTreeRecursivly(nodesInTree);
@@ -97,28 +231,28 @@ public struct Decider  {
             return null;
         }
         Debug.Log("popping and adding to tree");
-        while (nodesInTree.Count < 10000  && heap.HasTop())
+        while (nodesInTree.Count < 10000 && heap.HasTop())
         {
             DeciderNode top = (DeciderNode)heap.Pop();
-          
-            
-                top.SetMovesTo();
-                foreach (DeciderNode node in top.to.Values)
+
+
+            top.SetMovesTo();
+            foreach (DeciderNode node in top.to.Values)
+            {
+                if (!nodesInTree.ContainsKey(node))
                 {
-                    if (!nodesInTree.ContainsKey(node))
-                    {
 
-                        heap.AddToHeap(node);
-                        nodesInTree.Add(node, new Empty());
+                    heap.AddToHeap(node);
+                    nodesInTree.Add(node, new Empty());
 
-                    }
                 }
-            
+            }
+
 
         }
         Debug.Log(heap.Count);
-       // picking the best for the player;
-        
+        // picking the best for the player;
+
         DeciderNode topOfHeap = (DeciderNode)heap.Pop();
         while (topOfHeap.Player != root.Player && heap.HasTop())
         {
@@ -130,17 +264,15 @@ public struct Decider  {
         return MoveForNode(topOfHeap);
 
 
-
-
-
     }
+
 
     private Move MoveForNode(DeciderNode node)
     {
 
         DeciderNode check = node;
         
-        while (true)
+        while (check.From() != null)
         {
             if ((DeciderNode)check.From() == root)
             {
@@ -148,7 +280,7 @@ public struct Decider  {
             }
             check = (DeciderNode)check.From();
         }
-       
+        return node.board.moveToMakeThis;
     }
     private Move BetterMove(Move m1, Move m2)
     {

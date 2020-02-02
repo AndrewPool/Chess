@@ -464,7 +464,7 @@ public struct ChessBoard {
             int chainScore = ScoreForPlayer(moves, player, unitscore);
 
 
-            score = score + unitscore + bestMove + chainScore;
+            score = score + unitscore ;
 
         }
         return score;
@@ -551,7 +551,7 @@ public struct ChessBoard {
                         {
                             if (Math.Abs(toDelete[goodNumIndex]) >= Math.Abs(badNumbers[badNumIndex]))
                             {
-                                score = -toDelete[goodNumIndex];
+                                score = score + toDelete[goodNumIndex];
                                 goodNumIndex++;
                             }
                             else
@@ -564,7 +564,7 @@ public struct ChessBoard {
                         {
                             if (Math.Abs(toDelete[badNumIndex]) >= Math.Abs(badNumbers[goodNumIndex]))
                             {
-                                score = -toDelete[badNumIndex];
+                                score = score + toDelete[badNumIndex];
                                 badNumIndex++;
                             }
                             else

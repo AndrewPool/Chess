@@ -13,7 +13,7 @@ public enum Token {
     
 }
 
-public class TokenHelper
+public static class TokenHelper
 {
 
 
