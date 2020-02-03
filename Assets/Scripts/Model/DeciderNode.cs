@@ -109,16 +109,36 @@ public class DeciderNode : ITraversable, IEquatable<DeciderNode>
     }
     public void AddAndCreateAllUniqueChildrenAgainstChecklist(IDictionary<DeciderNode, Empty> checklist, int deep)
     {
-
-        if (!IsLeaf && deep>0)
+        int newDeep = deep - 1;
+        if (!IsLeaf)
         {
             foreach(DeciderNode node in to.Values)
             {
                 if (!checklist.ContainsKey(node))
                 {
                     checklist.Add(node, new Empty());
+                    if(node.IsLeaf)node.SetMovesTo();
+
+                    if (newDeep > 0)
+                    {
+                        node.AddAndCreateAllUniqueChildrenAgainstChecklist(checklist, newDeep);
+                    }
+                }
+            }
+        }else if (IsLeaf)
+        {
+            SetMovesTo();
+            foreach (DeciderNode node in to.Values)
+            {
+                if (!checklist.ContainsKey(node))
+                {
+                    checklist.Add(node, new Empty());
                     node.SetMovesTo();
-                    node.AddAndCreateAllUniqueChildrenAgainstChecklist(checklist, (deep -1));
+
+                    if (newDeep > 0)
+                    {
+                        node.AddAndCreateAllUniqueChildrenAgainstChecklist(checklist, newDeep);
+                    }
                 }
             }
         }

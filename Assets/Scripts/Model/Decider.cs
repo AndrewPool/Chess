@@ -106,7 +106,7 @@ public struct Decider  {
         foreach (DeciderNode node in nodes)
         {
 
-            node.AddAndCreateAllUniqueChildrenAgainstChecklist(checkList, 10);
+            node.AddAndCreateAllUniqueChildrenAgainstChecklist(checkList, 2);
         }
         DeciderNode bestNode = new DeciderNode(SmartSquare.StandardBoardSetUp());
 

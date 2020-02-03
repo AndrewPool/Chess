@@ -442,7 +442,7 @@ public struct ChessBoard {
 
             bool player = board[piece.row, piece.column].unit.player;
             int unitscore = TokenHelper.Value(board[piece.row, piece.column].unit.token, player);
-
+            
             int bestMove = 0;
             Location[] moves = board[piece.row, piece.column].moves;
             for (int i = 0; i < moves.Length; i++)
