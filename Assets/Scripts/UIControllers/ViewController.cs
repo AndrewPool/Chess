@@ -7,7 +7,8 @@ public class ViewController : MonoBehaviour {
 
     [SerializeField] Text AndyScoreDisplay;
     [SerializeField] ButtonController[] GameView;
-
+    [SerializeField] Button computerIcon;
+    [SerializeField] Button computerPlayer;
     private Decider game;
 
     private Location from = new Location(9, 9);
@@ -22,7 +23,8 @@ public class ViewController : MonoBehaviour {
     private const bool player1 = true;
     private const bool player2 = false;
 
-
+    private bool computerPlaying = false;
+    private bool computerPlayerBool = false;
     public void Select(Location location)
     {
         if (selectingOrMoving == Selecting)
@@ -37,8 +39,9 @@ public class ViewController : MonoBehaviour {
 
             CurrentPlayer = !CurrentPlayer;
 
-
             MakeMove();
+            SyncWithGame();
+            Debug.Log(computerPlayerBool);
             //over is borken it;s not even firing
             if (game.Over() || game.Choices().Count == 0)
             {
@@ -47,15 +50,16 @@ public class ViewController : MonoBehaviour {
                 SyncWithGame();
                 return;
             }
-            else
+            else if (computerPlaying && CurrentPlayer == computerPlayerBool)
             {
                 Move computerMove = game.PickOneForMe();
 
                 to = computerMove.to;
                 from = computerMove.from;
+                CurrentPlayer = !CurrentPlayer;
 
                 MakeMove();
-                if (game.Over())
+                if (game.Choices().Count == 0)
                 {
                     Debug.Log("winner!");
                     Debug.Log("computer won");
@@ -64,10 +68,7 @@ public class ViewController : MonoBehaviour {
                 }
                 SyncWithGame();
             }
-
-           
-
-
+    
         }
         selectingOrMoving = !selectingOrMoving;
     }
@@ -85,7 +86,7 @@ public class ViewController : MonoBehaviour {
                 break;
             }
         }
-        Debug.Log(move.from.String());
+       // Debug.Log(move.from.String());
         game = game.Pick(move);
     }
     
@@ -93,12 +94,14 @@ public class ViewController : MonoBehaviour {
     //activates only the active spaces you can move
     private void ActivateFromSpaces()
     {
-      //  Debug.Log("activingt from spaces");
+       // Debug.Log("activingt from spaces");
         DisableAllSpaces();
+       // Debug.Log(game.Choices().Count);
         foreach (Move move in game.Choices())
         {
+           
             int j = move.from.Mapped2D();
-          //  Debug.Log("activeing from space: " + j + " to: " + move.to.Mapped2D());
+          // Debug.Log("activeing from space: " + j + " to: " + move.to.Mapped2D());
             //Debug.Log(move.)
             GameView[j].ToggleActive(true);
         }
@@ -132,19 +135,69 @@ public class ViewController : MonoBehaviour {
     }
     //-------------above acivating and disavleing spaces--------------------------
 
+        //---------------togglecomputer-----------------
+    /// <summary>
+    /// toggles the computer playing
+    /// </summary>
+    public void ToggleComputerPlaying()
+    {
+        Debug.Log("toggling computer player on/off");
+        computerPlaying = !computerPlaying;
+
+        SetComputerIcon();
+    }
+    private void SetComputerIcon()
+    {
+        if (computerPlaying)
+        {
+            computerIcon.image.color = Color.green;
+        }
+        else
+        {
+            computerIcon.image.color = Color.black;
+        }
+    }
+    /// <summary>
+    /// toggles the computer player
+    /// </summary>
+    public void ToggleComputerPlayer()
+    {
+        Debug.Log("toggling computer player color");
+        computerPlayerBool = !computerPlayerBool;
+
+        SetComputerPlayerIcon();
+    }
+    private void SetComputerPlayerIcon()
+    {
+        if (computerPlayerBool)
+        {
+            computerPlayer.image.color = Color.white;
+        }
+        else
+        {
+            computerPlayer.image.color = Color.black;
+        }
+    }
+    //---------------toggle computer above-----------------
 
     //-----------------on start up stuff below, also SyncWithGame----------------------------
-
-    private void SetUpNewGame()
+    /// <summary>
+    /// refresh button calls this
+    /// </summary>
+    public void SetUpNewGame()
     {
+        Debug.Log("Setting up new Game");
         CurrentPlayer = player1;
         game = new Decider(SmartSquare.StandardBoardSetUp());
-      
+        SetComputerPlayerIcon();
+        SetComputerIcon();
         SyncWithGame();
+
     }
 
     private void SyncWithGame()
     {
+        Debug.Log("sync with game");
         SmartSquare[,] board = game.GetCurrentState();
         for (int row = 0; row < 8; row++)
         {
@@ -153,9 +206,7 @@ public class ViewController : MonoBehaviour {
 
                 int i = row * 8 + col;
                 GameView[i].ToggleActive(true);
-                //DeciderNode node = game
-                //Debug.Log(i);
-
+               
                 //set the token
                 GameView[i].PlaySpace().SetToken(board[row, col].unit.token, board[row, col].unit.player);
 
@@ -164,6 +215,7 @@ public class ViewController : MonoBehaviour {
         string scoreText = game.ScoreForCurrentState().ToString();
         AndyScoreDisplay.text = scoreText;
         ActivateFromSpaces();
+        Debug.Log("finnished sync");
     }
 
 

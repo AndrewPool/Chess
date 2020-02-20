@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
 
 public struct Location : IEquatable<Location>
 {
@@ -33,11 +30,15 @@ public struct Location : IEquatable<Location>
         return false;
     }
 
-    public String String()
+    public string String()
     {
         return row + " " + column;
     }
-
+    public bool IsValid()
+    {
+        if (column < 8 && row < 8 && row >= 0 && column >= 0) return true;
+        return false;
+    }
     //bunch of static location arrays for moving using as a refrence for pieces.
     public readonly static Location[] KnightHops = new Location[8]
         {//clockwise from top left
