@@ -23,6 +23,7 @@ public struct SmartSquare
         {
             temp[i] = moves[i];
         }
+        
         temp[temp.Length - 1] = square;
         moves = temp;
     }

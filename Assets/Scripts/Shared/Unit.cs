@@ -21,7 +21,7 @@ public struct Unit
     {
         switch (token)
         {//the complier does this multiplication that is why it is here
-            case Token.None: return 0;
+           //case Token.None: return 0;
             case Token.Pawn: if (player) { return 1 * 64; } return 12 * 64;
             case Token.Knight: if (player) { return 2 * 64; } return 7 * 64;
             case Token.Bishop: if (player) { return 3 * 64; } return 8 * 64;

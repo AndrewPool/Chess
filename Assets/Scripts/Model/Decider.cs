@@ -13,7 +13,9 @@ using robinhood;
 public struct Decider  {
     //this was tripping me up, not hidding the impementation...
     private readonly DeciderNode root;
-
+    private MaxHeap maxHeap;
+    private IDictionary<int, DeciderNode> checkList;
+    private IDictionary<DeciderNode, int> scoreForBranch;
     
     /// <summary>
     /// you must give one of these to the PickFunction if you wish to use this datatype correctly, please don't mutate this dict...
@@ -21,7 +23,7 @@ public struct Decider  {
     /// <returns>a valid move dictionary</returns>
     public ICollection<Move> Choices()
     {
-        return root.to.Keys;
+        return root.To.Keys;
     }
 
     /// <summary>
@@ -95,21 +97,21 @@ public struct Decider  {
     public Move TwoDeep()
     {
         Debug.Log("two deep picker");
-        IDictionary<DeciderNode, Empty> checkList = new Dictionary<DeciderNode,Empty>(10000);
+      //  IDictionary<DeciderNode, Empty> checkList = new Dictionary<DeciderNode, Empty>(10000);
         ICollection<ITraversable> nodes = root.ToNodes();
         foreach (DeciderNode node in nodes)
         {
 
-            checkList.Add(node, new Empty());
+            node.SetMovesTo(checkList,maxHeap);
         }
 
-        foreach (DeciderNode node in nodes)
-        {
+        //foreach (DeciderNode node in nodes)
+        //{
 
-            node.AddAndCreateAllUniqueChildrenAgainstChecklist(checkList, 2);
-        }
+        //    node.AddAndCreateAllUniqueChildrenAgainstChecklist(checkList, 2);
+        //}
         DeciderNode bestNode = new DeciderNode(SmartSquare.StandardBoardSetUp());
-
+        DeciderNode defaultNode = bestNode;
         int best = int.MaxValue;
         if (root.Player)
         {
@@ -133,9 +135,9 @@ public struct Decider  {
         }
         else
         {
-           
+
             best = int.MinValue;
-          
+
             foreach (ITraversable child in nodes)
             {
                 DeciderNode testChild = (DeciderNode)child;
@@ -153,6 +155,10 @@ public struct Decider  {
 
         }
 
+        if(bestNode == defaultNode)
+        {
+            Debug.Log("two deep default move is a fail status");
+        }
         return bestNode.board.moveToMakeThis;//TODO this will return null
 
 
@@ -169,25 +175,25 @@ public struct Decider  {
         foreach (DeciderNode node in nodes)
         {
            
-            node.SetMovesTo();
+            node.SetMovesTo(checkList,maxHeap);
         }
         nodes = root.ToNodes();
         DeciderNode bestNode = new DeciderNode(SmartSquare.StandardBoardSetUp());
 
         int best = int.MinValue;
-        if (!root.Player)
+        if (!root.Player)//if is black
         {
-            foreach (ITraversable child in nodes)
+            foreach (DeciderNode child in nodes)
             {
 
-                DeciderNode testChild = (DeciderNode)child;
-                int score = testChild.BestMoveScore();
+               
+                int score = child.ScoreForBranch();
 
 
                 if (score > best)
                 {
                     best = score;
-                    bestNode = testChild;
+                    bestNode = child;
                 }
 
 
@@ -195,20 +201,20 @@ public struct Decider  {
 
             }
         }
-        else
+        else//if is white
         {
             best = int.MaxValue;
-            foreach (ITraversable child in nodes)
+            foreach (DeciderNode child in nodes)
             {
 
-                DeciderNode testChild = (DeciderNode)child;
-                int score = testChild.BestMoveScore();
+             
+                int score = child.ScoreForBranch();
 
 
                 if (score < best)
                 {
                     best = score;
-                    bestNode = testChild;
+                    bestNode = child;
                 }
             }
 
@@ -216,55 +222,56 @@ public struct Decider  {
       
         return bestNode.board.moveToMakeThis;
     }
-    private Move StupidHeapBuild()
-    {
-        Debug.Log("picking one");
-        IDictionary<DeciderNode, Empty> nodesInTree = new Dictionary<DeciderNode, Empty>(10000);
+
+    //private Move StupidHeapBuild()
+    //{
+    //    Debug.Log("picking one");
+    //    IDictionary<DeciderNode, Empty> nodesInTree = new Dictionary<DeciderNode, Empty>(10000);
 
         
-        MaxHeap heap = new MaxHeap(root);
-        Debug.Log("adding nodes to checklist");
-        root.AddNodesToTreeRecursivly(nodesInTree);
+    //    MaxHeap heap = new MaxHeap(root);
+    //    Debug.Log("adding nodes to checklist");
+    //    root.AddNodesToTreeRecursivly(nodesInTree);
 
-        if (root.to.Keys == null)
-        {
-            return null;
-        }
-        Debug.Log("popping and adding to tree");
-        while (nodesInTree.Count < 10000 && heap.HasTop())
-        {
-            DeciderNode top = (DeciderNode)heap.Pop();
-
-
-            top.SetMovesTo();
-            foreach (DeciderNode node in top.to.Values)
-            {
-                if (!nodesInTree.ContainsKey(node))
-                {
-
-                    heap.AddToHeap(node);
-                    nodesInTree.Add(node, new Empty());
-
-                }
-            }
+    //    if (root.To.Keys == null)
+    //    {
+    //        return null;
+    //    }
+    //    Debug.Log("popping and adding to tree");
+    //    while (nodesInTree.Count < 10000 && heap.HasTop())
+    //    {
+    //        DeciderNode top = (DeciderNode)heap.Pop();
 
 
-        }
-        Debug.Log(heap.Count);
-        // picking the best for the player;
+    //        top.SetMovesTo(checkList,maxHeap);
+    //        foreach (DeciderNode node in top.To.Values)
+    //        {
+    //            if (!nodesInTree.ContainsKey(node))
+    //            {
 
-        DeciderNode topOfHeap = (DeciderNode)heap.Pop();
-        while (topOfHeap.Player != root.Player && heap.HasTop())
-        {
+    //                heap.AddToHeap(node);
+    //                nodesInTree.Add(node, new Empty());
 
-            topOfHeap = (DeciderNode)heap.Pop();
-
-        }
-
-        return MoveForNode(topOfHeap);
+    //            }
+    //        }
 
 
-    }
+    //    }
+    //    Debug.Log(heap.Count);
+    //    // picking the best for the player;
+
+    //    DeciderNode topOfHeap = (DeciderNode)heap.Pop();
+    //    while (topOfHeap.Player != root.Player && heap.HasTop())
+    //    {
+
+    //        topOfHeap = (DeciderNode)heap.Pop();
+
+    //    }
+
+    //    return MoveForNode(topOfHeap);
+
+
+    //}
 
 
     private Move MoveForNode(DeciderNode node)
@@ -288,16 +295,16 @@ public struct Decider  {
         if (root.Player)
         {
 
-            if (((DeciderNode)root.to[m1]).board.Score > ((DeciderNode)root.to[m2]).board.Score)
+            if (((DeciderNode)root.To[m1]).board.Score > ((DeciderNode)root.To[m2]).board.Score)
             {
                 returnMove = m2;
             }
         }
         else
         {
-            Debug.Log(((DeciderNode)root.to[m1]).board.Score);
+            Debug.Log(((DeciderNode)root.To[m1]).board.Score);
             //((DeciderNode)root.to[m1]).board.Score
-            if (((DeciderNode)root.to[m1]).board.Score < ((DeciderNode)root.to[m2]).board.Score)
+            if (((DeciderNode)root.To[m1]).board.Score < ((DeciderNode)root.To[m2]).board.Score)
             {
                 returnMove = m2;
             }
@@ -314,7 +321,7 @@ public struct Decider  {
     public Decider Pick(Move move)
     {
 
-        DeciderNode node = (DeciderNode)root.to[move];
+        DeciderNode node = (DeciderNode)root.To[move];
         root.ConvertToTuber();
         return new Decider(node);
     }
@@ -324,12 +331,19 @@ public struct Decider  {
     //this is for internal Deciderness.
     public Decider(DeciderNode node)
     {
-        
-        root = node;
-        if (root.IsLeaf)
+        checkList = new Dictionary<int, DeciderNode>
         {
-            root.SetMovesTo();
-        }
+            { node.GetHashCode(), node }
+        };
+        maxHeap = new MaxHeap(node);
+        scoreForBranch = new Dictionary<DeciderNode, int>();
+
+        root = node;
+      //  if (root.IsLeaf)
+        //{
+            root.SetMovesTo(hashNodePair:checkList,heap:maxHeap);
+       // }
+       
     }
 
 
@@ -339,9 +353,22 @@ public struct Decider  {
     /// <param name="setupState"></param>
     public Decider(SmartSquare[,] setupState)
     {
-      
         root = new DeciderNode(setupState);
-        root.SetMovesTo();//first player
+
+
+        checkList = new Dictionary<int, DeciderNode>
+        {
+            { root.GetHashCode(), root }
+        };
+
+
+        scoreForBranch = new Dictionary<DeciderNode, int>();
+
+
+       
+        maxHeap = new MaxHeap(root);
+
+        root.SetMovesTo(hashNodePair: checkList, heap: maxHeap);//first player
         //we know this is a leaf
     }
     //------------------------------init above------------------------------

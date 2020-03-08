@@ -25,7 +25,7 @@ public struct ChessBoard {
    
 
     /// <summary>
-    /// this is if for somereason you already have a bunch of smart squares, like vecause i creaeted one for setting up the game.
+    /// this is if for somereason you already have a bunch of smart squares, like because i created one for setting up the game.
     /// </summary>
     /// <param name="board"></param>
     public ChessBoard(SmartSquare[,] board)
@@ -69,7 +69,7 @@ public struct ChessBoard {
             {
 
                 //this is nessessary because these are objects.
-                //also we can't do it on the fly because we also tag the to
+                //also we can't do it on the fly because we also tag the 'to'
                 //we would have to implement so much shit to get it to work.
                 newArray[row, col].movesTo = new Location[0];
 
@@ -464,7 +464,7 @@ public struct ChessBoard {
             int chainScore = ScoreForPlayer(moves, player, unitscore);
 
 
-            score = score + unitscore ;
+            score = score + unitscore + chainScore + bestMove;
 
         }
         return score;
@@ -513,19 +513,20 @@ public struct ChessBoard {
        
         if (badNumCount > 0)
         {
-            //so white wants a normal sort up because they go 1to9
-            //black wants a reverse sort because they go -1to-9
+            //so black wants a normal sort up because they go 1to9
+            //white wants a reverse sort because they go -1to-9
             if (currentPlayer)//is white
-            {
-                goodNumbers.Sort();
-                badNumbers.Sort();
-                badNumbers.Reverse();
-            }
-            else//currentplayer is black
             {
                 badNumbers.Sort();
                 goodNumbers.Sort();
                 goodNumbers.Reverse();
+            }
+            else//currentplayer is black
+            {
+                goodNumbers.Sort();
+                badNumbers.Sort();
+                badNumbers.Reverse();
+               
             }
             
             //if the first piece is worth more than second

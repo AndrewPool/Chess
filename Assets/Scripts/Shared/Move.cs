@@ -20,7 +20,7 @@ public class Move
 
     public override int GetHashCode()
     {
-        return ((from.row * 8 + from.column)*10000) + ((to.row * 8) + to.column);
+        return ((from.row * 8 + from.column)*64) + ((to.row * 8) + to.column);
     }
     
     public override bool Equals(object other)

@@ -20,12 +20,12 @@ public class ChessGameTests {
 
 		DeciderNode node = new DeciderNode(SmartSquare.StandardBoardSetUp());
 
-		node.SetMovesTo();
+		//node.SetMovesTo();
 
-		Debug.Log(node.to.Count);
+		//Debug.Log(node.To.Count);
 		//TestPickOneForMe();
 
-		//PlayGame(10);
+		PlayGame(10);
 
         
         
@@ -50,6 +50,7 @@ public class ChessGameTests {
 
         while(turnCount > 0)
         {
+            //there should be a test for this
 			game = game.Pick(game.PickOneForMe());
 			turnCount--;
 		}

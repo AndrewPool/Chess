@@ -30,7 +30,7 @@ public class ViewController : MonoBehaviour {
         if (selectingOrMoving == Selecting)
         {
             from = location;
-
+          
             ActivateToSpaces();
         }
         else
@@ -57,7 +57,7 @@ public class ViewController : MonoBehaviour {
                 to = computerMove.to;
                 from = computerMove.from;
                 CurrentPlayer = !CurrentPlayer;
-
+              
                 MakeMove();
                 if (game.Choices().Count == 0)
                 {
@@ -66,11 +66,13 @@ public class ViewController : MonoBehaviour {
                     SyncWithGame();
                     return;
                 }
-                SyncWithGame();
+               SyncWithGame();
+
             }
     
         }
         selectingOrMoving = !selectingOrMoving;
+      
     }
 
     //make a move, when oyu have from and to
@@ -192,7 +194,6 @@ public class ViewController : MonoBehaviour {
         SetComputerPlayerIcon();
         SetComputerIcon();
         SyncWithGame();
-
     }
 
     private void SyncWithGame()
@@ -225,9 +226,8 @@ public class ViewController : MonoBehaviour {
     // Use this for initialization
     void Start()
     {
-
-
-      //sets identity for each location
+       
+        //sets identity for each location
         for (int row = 0; row < 8; row++)
         {
             for (int col = 0; col < 8; col++)
@@ -238,6 +238,7 @@ public class ViewController : MonoBehaviour {
 
             }
         }
+        
 
     }
 

@@ -30,7 +30,7 @@ public class DeciderNode : ITraversable, IEquatable<DeciderNode>
     /// <summary>
     /// this can now be null able on mate, this is your mate check.
     /// </summary>
-    public IDictionary<Move, ITraversable> to { get; private set; }
+    public IDictionary<Move, ITraversable> To { get; private set; }
 
     public bool WhiteKingHasMoved { get; private set; }
 
@@ -55,7 +55,7 @@ public class DeciderNode : ITraversable, IEquatable<DeciderNode>
         poison = false;
         this.board = new ChessBoard(board: board);
         from = null;
-        to = null;
+        To = null;
         IsLeaf = true;
 
     }
@@ -68,7 +68,7 @@ public class DeciderNode : ITraversable, IEquatable<DeciderNode>
         BlackKingHasMoved = from.BlackKingHasMoved;
         this.board = board;
         this.from = from;
-        to = null;
+        To = null;
         IsLeaf = true;
 
     }
@@ -76,14 +76,14 @@ public class DeciderNode : ITraversable, IEquatable<DeciderNode>
     /// call this on the final pass of move picking to get estimate of a score for which there are no grandchildren
     /// </summary>
     /// <returns></returns>
-    public int BestMoveScore()
+    private int BestMoveScore()
     {
         int best = int.MaxValue;
         if (Player)// is white
         {
 
 
-            foreach (ITraversable child in to.Values)
+            foreach (ITraversable child in To.Values)
 
             {
                 DeciderNode childNode = (DeciderNode)child;
@@ -96,7 +96,7 @@ public class DeciderNode : ITraversable, IEquatable<DeciderNode>
         //else player is black
 
         best = int.MinValue;
-        foreach (ITraversable child in to.Values)
+        foreach (ITraversable child in To.Values)
 
         {
             DeciderNode childNode = (DeciderNode)child;
@@ -107,42 +107,43 @@ public class DeciderNode : ITraversable, IEquatable<DeciderNode>
         return best;
 
     }
-    public void AddAndCreateAllUniqueChildrenAgainstChecklist(IDictionary<DeciderNode, Empty> checklist, int deep)
-    {
-        int newDeep = deep - 1;
-        if (!IsLeaf)
-        {
-            foreach(DeciderNode node in to.Values)
-            {
-                if (!checklist.ContainsKey(node))
-                {
-                    checklist.Add(node, new Empty());
-                    if(node.IsLeaf)node.SetMovesTo();
+    //canidate for deletion
+    //public void AddAndCreateAllUniqueChildrenAgainstChecklist(IDictionary<DeciderNode, Empty> checklist, int deep)
+    //{
+    //    int newDeep = deep - 1;
+    //    if (!IsLeaf)
+    //    {
+    //        foreach(DeciderNode node in To.Values)
+    //        {
+    //            if (!checklist.ContainsKey(node))
+    //            {
+    //                checklist.Add(node, new Empty());
+    //                if(node.IsLeaf)node.SetMovesTo();
 
-                    if (newDeep > 0)
-                    {
-                        node.AddAndCreateAllUniqueChildrenAgainstChecklist(checklist, newDeep);
-                    }
-                }
-            }
-        }else if (IsLeaf)
-        {
-            SetMovesTo();
-            foreach (DeciderNode node in to.Values)
-            {
-                if (!checklist.ContainsKey(node))
-                {
-                    checklist.Add(node, new Empty());
-                    node.SetMovesTo();
+    //                if (newDeep > 0)
+    //                {
+    //                    node.AddAndCreateAllUniqueChildrenAgainstChecklist(checklist, newDeep);
+    //                }
+    //            }
+    //        }
+    //    }else if (IsLeaf)
+    //    {
+    //        SetMovesTo();
+    //        foreach (DeciderNode node in To.Values)
+    //        {
+    //            if (!checklist.ContainsKey(node))
+    //            {
+    //                checklist.Add(node, new Empty());
+    //                node.SetMovesTo();
 
-                    if (newDeep > 0)
-                    {
-                        node.AddAndCreateAllUniqueChildrenAgainstChecklist(checklist, newDeep);
-                    }
-                }
-            }
-        }
-    }
+    //                if (newDeep > 0)
+    //                {
+    //                    node.AddAndCreateAllUniqueChildrenAgainstChecklist(checklist, newDeep);
+    //                }
+    //            }
+    //        }
+    //    }
+    //}
     public int ScoreForBranch()
     {
         if (IsLeaf)
@@ -158,7 +159,7 @@ public class DeciderNode : ITraversable, IEquatable<DeciderNode>
 
     public void ConvertToTuber()
     {
-        to = null;
+        To = null;
     }
 
     public ITraversable From()
@@ -168,7 +169,7 @@ public class DeciderNode : ITraversable, IEquatable<DeciderNode>
 
     public ICollection<ITraversable> ToNodes()
     {
-        return to.Values;
+        return To.Values;
     }
 
 
@@ -198,22 +199,22 @@ public class DeciderNode : ITraversable, IEquatable<DeciderNode>
     }
 
 
-    public void AddNodesToTreeRecursivly(IDictionary<DeciderNode, Empty> onlyKeys)
-    {
-        if (!onlyKeys.ContainsKey(this))
-        {
-            onlyKeys.Add(this, new Empty());
-            if (!IsLeaf)
-            {
-                foreach (DeciderNode node in to.Values)
-                {
-                    node.AddNodesToTreeRecursivly(onlyKeys);
-                }
+    //public void AddNodesToTreeRecursivly(IDictionary<int, DeciderNode> onlyKeys)
+    //{
+    //    if (!onlyKeys.ContainsKey(this))
+    //    {
+    //        onlyKeys.Add(this, new Empty());
+    //        if (!IsLeaf)
+    //        {
+    //            foreach (DeciderNode node in To.Values)
+    //            {
+    //                node.AddNodesToTreeRecursivly(onlyKeys);
+    //            }
 
 
-            }
-        }
-    }
+    //        }
+    //    }
+    //}
 
     ////----------------------------Set Moves To-----------------------------
     /// includes, SetMovesTo(), Caslte move check for sanity Set moves to is last function in this file.
@@ -249,7 +250,7 @@ public class DeciderNode : ITraversable, IEquatable<DeciderNode>
 
             Move newMove = new Move(new Location(7, 4), new Location(7, 6), MoveType.CastleShort);
             DeciderNode newNode = new DeciderNode(new ChessBoard(board.board, newMove), this);
-            to.Add(newMove, newNode);
+            To.Add(newMove, newNode);
         }
 
         castle = true;
@@ -278,7 +279,7 @@ public class DeciderNode : ITraversable, IEquatable<DeciderNode>
         {
             Move newMove = new Move(new Location(7, 4), new Location(7, 2), MoveType.CastleLong);
             DeciderNode newNode = new DeciderNode(new ChessBoard(board.board, newMove), this);
-            to.Add(newMove, newNode);
+            To.Add(newMove, newNode);
         }
 
 
@@ -314,7 +315,7 @@ public class DeciderNode : ITraversable, IEquatable<DeciderNode>
 
             Move newMove = new Move(new Location(0, 4), new Location(0, 6), MoveType.CastleShort);
             DeciderNode newNode = new DeciderNode(new ChessBoard(board.board, newMove), this);
-            to.Add(newMove, newNode);
+            To.Add(newMove, newNode);
         }
 
         castle = true;
@@ -345,7 +346,7 @@ public class DeciderNode : ITraversable, IEquatable<DeciderNode>
 
             Move newMove = new Move(new Location(0, 4), new Location(0, 2), MoveType.CastleLong);
             DeciderNode newNode = new DeciderNode(new ChessBoard(board.board, newMove), this);
-            to.Add(newMove, newNode);
+            To.Add(newMove, newNode);
         }
 
     }
@@ -354,11 +355,11 @@ public class DeciderNode : ITraversable, IEquatable<DeciderNode>
     /// Be aware that this also clears the moves list on all the squares on completion, to save space...
     /// this can be updated later create a different square type without the pointers. idk, that's a lot of work, not a lot of pay off.
     /// </summary>
-    public void SetMovesTo()
+    public void SetMovesTo(IDictionary<int,DeciderNode>hashNodePair,MaxHeap heap)
     {
         //  Debug.Log("making moves smart");
         int count = 0;
-        to = new Dictionary<Move, ITraversable>();
+        To = new Dictionary<Move, ITraversable>();
 
         if(board.BlackWon || board.WhiteWon)
         {
@@ -394,16 +395,7 @@ public class DeciderNode : ITraversable, IEquatable<DeciderNode>
                         //this would work better with a functional paradigm assigning a check func at player aloc
                         if ((!newNode.board.WhiteInCheck && Player) || (!newNode.board.BlackInCheck && !Player))
                         {
-                            //i should not need this test, but also i don't know why i need it
-
-                            if (to.ContainsKey(newMove))
-                            {
-                                to[newMove] = newNode;
-                            }
-                            else
-                            {
-                                to.Add(newMove, newNode);
-                            }
+                            BuildTreeAgainst(hashNodePair, heap, newMove, newNode);
                             count++;
                         }
 
@@ -417,6 +409,9 @@ public class DeciderNode : ITraversable, IEquatable<DeciderNode>
             }
         }
 
+
+
+
         //does the stuff for castleing
         if (WhiteKingHasMoved == false && Player) WhiteCastleMoveCheck();
         if (BlackKingHasMoved == false && !Player) BlackCastleMoveCheck();
@@ -429,11 +424,34 @@ public class DeciderNode : ITraversable, IEquatable<DeciderNode>
        board.DisposeOfResources();
 
     }
-
+    private void BuildTreeAgainst(IDictionary<int, DeciderNode> hashNodePair, MaxHeap heap, Move move, DeciderNode node)
+    {
+        int preHash = node.GetHashCode();//this isn't actually hashed yet, the hash is the remainder, remember.
+        if (hashNodePair.ContainsKey(preHash))//if it is in your dictionary
+        {
+            //have your tree build to that node, instead of this one.
+            AddTo(move, hashNodePair[preHash]);//just get your mind around that it's a hash dictionary
+        }
+        else//if it's not in your dictionary
+        {
+            heap.AddToHeap(node);
+            hashNodePair.Add(preHash, node);//it's a hash dictionary
+            AddTo(move, node);
+        }
+    }
+     //i should not need this test, but also i don't know why i need it
+                           
+    private void AddTo(Move move, DeciderNode node)
+    {
+        if (To.ContainsKey(move))
+        {
+            To[move] = node;
+        }
+        else
+        {
+            To.Add(move, node);
+        }
+    }
   
-
-}
-public struct Empty
-{
 
 }

@@ -40,12 +40,12 @@ public static class TokenHelper
         switch (token)
         {
             case Token.None: return 0;
-            case Token.Pawn: if (player) { return -1; } return 1;
-            case Token.Knight: if (player) { return -3; } return 3;
-            case Token.Bishop: if (player) { return -4; } return 4;
-            case Token.Rook: if (player) { return -5; } return 5;
-            case Token.Queen: if (player) { return -10; } return 10;
-            case Token.King: if (player) { return int.MinValue/10; } return int.MaxValue/10;
+            case Token.Pawn: if (player) { return -2; } return 2;
+            case Token.Knight: if (player) { return -6; } return 6;
+            case Token.Bishop: if (player) { return -7; } return 7;
+            case Token.Rook: if (player) { return -10; } return 10;
+            case Token.Queen: if (player) { return -20; } return 20;
+            case Token.King: if (player) { return int.MinValue/10000; } return int.MaxValue/10000;
 
         }
         return int.MaxValue;
