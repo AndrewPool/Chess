@@ -23,7 +23,7 @@ public struct ChessBoard {
     public readonly SmartSquare[,] board;
 
    
-
+       
     /// <summary>
     /// this is if for somereason you already have a bunch of smart squares, like vecause i creaeted one for setting up the game.
     /// </summary>
